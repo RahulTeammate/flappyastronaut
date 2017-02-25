@@ -13,6 +13,9 @@ var roomMaxLength = 50;
 for (var i = 0; i < roomMaxLength; i++) {
 	rooms.push([null,null]);
 }
+
+//app.set('port', (process.env.PORT || 3000));
+
 app.use(express.static(__dirname));
 
 app.get('/', function(req, res, next){
@@ -116,7 +119,7 @@ io.on('connection', function(socket){
   });
 });
 
-server.listen((process.env.port || 3000), function(){
+server.listen((process.env.PORT || 3000), function(){
   console.log('listening on *:3000');
 });
 
