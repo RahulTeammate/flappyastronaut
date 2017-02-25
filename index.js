@@ -13,11 +13,10 @@ var roomMaxLength = 50;
 for (var i = 0; i < roomMaxLength; i++) {
 	rooms.push([null,null]);
 }
-
 app.use(express.static(__dirname));
 
 app.get('/', function(req, res, next){
-  res.sendfile(path.join(__dirname,'/../index.html'));
+  res.sendfile(path.join(__dirname,'index.html'));
 });
 
 io.on('connection', function(socket){
@@ -117,7 +116,7 @@ io.on('connection', function(socket){
   });
 });
 
-server.listen(3000, function(){
+server.listen((process.env.port || 3000), function(){
   console.log('listening on *:3000');
 });
 
