@@ -61,9 +61,16 @@ var state = {
 		this.load.audio("score", "/assets/score.wav");
 		this.load.audio("hurt", "/assets/hurt.wav");
 		
-		
+		//Put this here to stop the glitch where the walls still show
+		//in the 0th player's screen if the 1th player leaves during the gameplay
+		this.timer = this.game.time.events;
+		this.wallTimer = this.timer.loop(Phaser.Timer.SECOND * SPAWN_RATE, this.spawnWalls, this);
+		this.timer.pause();
 	},
 	create: function(){
+		//remove the ability to jump (if the player disconnects in the middle of a game glitch)
+		this.input.onDown.removeAll();
+		
 		// State create logic goes here
 		this.physics.startSystem(Phaser.Physics.ARCADE);
 		this.physics.arcade.gravity.y = GRAVITY;
@@ -129,9 +136,6 @@ var state = {
 			}
 		);
 		this.instructText.anchor.setTo(0.5, 0.5);
-		
-		//Removed this to prevent the player from starting the game without another player.
-		//this.input.onDown.add(this.jet, this);
 		
 		//Modified to wait for player
 		this.waiting4player();
@@ -246,14 +250,13 @@ var state = {
 		
 		this.gameStarted = true;
 		this.gameOver = false;
+		
 		//Let us make only 1 client enable the wall timer
-		this.wallTimer = null;
 		if (playerIndex == 0) {
-			this.wallTimer = this.game.time.events.loop(Phaser.Timer.SECOND * SPAWN_RATE, this.spawnWalls, this);
-			this.wallTimer.timer.start();
+			this.timer.resume();
 		}
 		else {
-			this.wallTimer = null;
+			this.timer.pause();
 		}
 		
 	},
@@ -274,7 +277,7 @@ var state = {
 			wall.body.velocity.x = wall.body.velocity.y = 0;
 		});
 		if (playerIndex == 0) {
-			this.wallTimer.timer.stop();
+			this.timer.pause();
 		}
 		this.hurtSnd.play();
 		
@@ -308,7 +311,7 @@ var state = {
 			wall.body.velocity.x = wall.body.velocity.y = 0;
 		});
 		if (playerIndex == 0) {
-			this.wallTimer.timer.stop();
+			this.timer.pause();
 		}
 		this.hurtSnd.play();
 		
@@ -401,5 +404,9 @@ var createWallFromServer = function (randVal) {
 }
 
 var setBackToWait = function () {
+	//Put this here to stop the glitch where the walls still show
+	//in the 0th player's screen if the 1th player leaves during the gameplay
+	console.log("Should be seen");
+	state.timer.pause();
 	state.create();
 }
