@@ -9,12 +9,12 @@ var path = require('path');
 //Phaser cannot run on the server since document doesn't exist.
 //Server Rooms
 var rooms = []
+var timerHandshake = [];
 var roomMaxLength = 50;
 for (var i = 0; i < roomMaxLength; i++) {
 	rooms.push([null,null]);
+	timerHandshake.push([false,false]);
 }
-
-//app.set('port', (process.env.PORT || 3000));
 
 app.use(express.static(__dirname));
 
@@ -50,10 +50,24 @@ io.on('connection', function(socket){
 		}
 		else if (data.msg && data.msg == 'opponent lost') {
 			var oppoPlayer = (data.player == 0) ? 1 : 0;
+			//reset the start handshake
+			timerHandshake[data.room][0] = false;
+			timerHandshake[data.room][1] = false;
 			console.log(oppoPlayer);
 			console.log('server sends you win signal');
 			if (rooms[data.room][oppoPlayer] != null) {//done for sudden disconnects
 				(rooms[data.room][oppoPlayer]).emit('message', {msg:'you win'});
+			}
+		}
+		else if (data.msg && data.msg == 'timer finished') {
+			if (rooms[data.room][data.player] != null) {//done for sudden disconnects
+				timerHandshake[data.room][data.player] = true;
+			}
+			if (rooms[data.room][0] != null && rooms[data.room][1] != null) {//done for sudden disconnects
+				if (timerHandshake[data.room][0] == true && timerHandshake[data.room][1] == true) {
+					(rooms[data.room][0]).emit('message', {msg:'game start'});
+					(rooms[data.room][1]).emit('message', {msg:'game start'});
+				}
 			}
 		}
 		else if (data.msg && data.msg == 'Hello from client') {
@@ -69,8 +83,8 @@ io.on('connection', function(socket){
 					else { //game start
 						console.log('Two clients start the game. YAAAAAAAAAAAAY');
 						if (rooms[i][0] != null && rooms[i][1] != null) {//done for sudden disconnects
-							(rooms[i][0]).emit('message',{msg: 'Game start', roomIndex: i, playerIndex: 0});
-							(rooms[i][1]).emit('message',{msg: 'Game start', roomIndex: i, playerIndex: 1});
+							(rooms[i][0]).emit('message',{msg: 'Countdown start', roomIndex: i, playerIndex: 0});
+							(rooms[i][1]).emit('message',{msg: 'Countdown start', roomIndex: i, playerIndex: 1});
 						}
 					}
 					break;
@@ -86,8 +100,8 @@ io.on('connection', function(socket){
 					else { //game starts
 						console.log('Two clients start the game. YAAAAAAAAAAAAY');
 						if (rooms[i][0] != null && rooms[i][1] != null) {//done for sudden disconnects
-							(rooms[i][0]).emit('message',{msg: 'Game start', roomIndex: i, playerIndex: 0});
-							(rooms[i][1]).emit('message',{msg: 'Game start', roomIndex: i, playerIndex : 1});
+							(rooms[i][0]).emit('message',{msg: 'Countdown start', roomIndex: i, playerIndex: 0});
+							(rooms[i][1]).emit('message',{msg: 'Countdown start', roomIndex: i, playerIndex : 1});
 						}
 					}
 					break;
@@ -102,6 +116,8 @@ io.on('connection', function(socket){
 		for (var i = 0; i < roomMaxLength; i++) {
 			if (socket == rooms[i][0]) {
 				rooms[i][0] = null;
+				timerHandshake[i][0] = false;
+				timerHandshake[i][1] = false;
 				if (rooms[i][1] != null) {
 					(rooms[i][1]).emit('message',{msg:'opponent vanished'});
 				}
@@ -109,6 +125,8 @@ io.on('connection', function(socket){
 			}
 			else if (socket == rooms[i][1]) {
 				rooms[i][1] = null;
+				timerHandshake[i][0] = false;
+				timerHandshake[i][1] = false;
 				if (rooms[i][0] != null) {
 					(rooms[i][0]).emit('message',{msg:'opponent vanished'});
 				}

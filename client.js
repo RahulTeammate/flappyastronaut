@@ -17,6 +17,10 @@ socket.on('message', function (data) {
 		console.log('client accepted you win signal');
 		setYouWin();
 	}
+	else if (data.msg && data.msg == 'game start') {
+		console.log('client and opponent start game together');
+		sendStartToGame();
+	}
 	else if (data.msg && data.msg == 'opponent vanished') {
 		console.log('client laughes at cowardly opponent');
 		connected = false;
@@ -31,7 +35,7 @@ socket.on('message', function (data) {
 		roomIndex = data.roomIndex;
 		playerIndex = data.playerIndex;
 	}
-	else if (data.msg && data.msg == 'Game start') {
+	else if (data.msg && data.msg == 'Countdown start') {
 		console.log('Two clients can begin. YAAAAAAAAAAAAAAAAAAAAY.');
 		connected = true;
 		roomIndex = data.roomIndex;
@@ -46,8 +50,8 @@ var startCountdown = function(sec) {
 			clearInterval(timer);
 		}
 		else if (sec < 0) {
+			socket.emit('message',{msg: 'timer finished', room: roomIndex, player: playerIndex});
 			clearInterval(timer);
-			sendStartToGame();
 		}
 		else {
 			sendCountdownToGame(sec); 

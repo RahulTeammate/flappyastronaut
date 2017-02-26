@@ -34,7 +34,7 @@ b.exports=c,c.getUnvisitedNode=function(a){for(var b=a.length,c=0;c!==b;c++){var
 var SPEED = 200;
 var GRAVITY = 900;
 var JET = 420;
-var OPENING = 400;
+var OPENING = 350;
 var SPAWN_RATE = 1.25; 
 
 var state = {
@@ -70,6 +70,10 @@ var state = {
 		this.background = this.add.tileSprite(0,0, this.world.width, this.world.height, 'background');
 		
 		this.walls = this.add.group();
+		
+		OPENING = 350;
+		
+		this.score = 0;
 		
 		//Added for opponent
 		this.opponent = this.add.sprite(0,0,'opponent');
@@ -220,6 +224,8 @@ var state = {
 		this.setGameOver();
 	},
 	reset:function(){
+		OPENING = 350;
+		this.score = 0;
 		this.background.autoScroll(-SPEED * .80 ,0);
 		startCountdown(10);
 	},
@@ -346,6 +352,17 @@ var state = {
 	addScore: function (wall) {
 		wall.scored = true;
 		this.scoreSnd.play();
+		
+		this.score = this.score + 1;
+		if (this.score == 12) {
+			OPENING = 300;
+		}
+		else if (this.score == 24) {
+			OPENING = 250;
+		}
+		else if (this.score == 36) {
+			OPENING = 200;
+		}
 	}
 };
 
